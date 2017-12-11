@@ -18,7 +18,9 @@
       } else {
         $form->model->save();
         $form->success('Record updated');
-        return new \atk4\ui\jsExpression('document.location = "main.php" ');
+        $_SESSION['nick_name'] = $form->model['nick_name'];
+        $_SESSION['password'] = $form->model['password'];
+        return new \atk4\ui\jsExpression('document.location = "reg.php" ');
       }
   }
  });
