@@ -1,26 +1,43 @@
 <?php
 
- require 'vendor/autoload.php';
- require 'warehouse.php';
- require 'loginform.php';
+require 'connecting.php';
 
- $app = new Warehouse(false);
- $app->layout->add(['Header','Sign up','massive']);
+$app = new \atk4\ui\App('Регистрация');
+$app->initLayout('Centered');
 
- $form = $app->layout->add('Form');
- $form->setModel(new User($app->db));
- $form->onSubmit(function($form) {
-  if ($form->model['nick_name'] == '') {
-    return $form->error('nick_name', "This field mustn't be empty. ");
-  } else {
-      if ($form->model['password'] == '') {
-        return $form->error('password', "This field mustn't be empty. ");
-      } else {
-        $form->model->save();
-        $form->success('Record updated');
-        $_SESSION['nick_name'] = $form->model['nick_name'];
-        $_SESSION['password'] = $form->model['password'];
-        return new \atk4\ui\jsExpression('document.location = "reg.php" ');
-      }
-  }
- });
+$button = $app->add(['Button','Назад','small teal','icon'=>'reply'])
+->link(['index']);
+$app->add(['ui'=>'hidden divider']);
+
+class Reg extends \atk4\data\Model {
+	public $table = 'users';
+function init() {
+	parent::init();
+  $this->addField('nick',['caption'=>'Nick name','required'=>TRUE]);
+  $this->addField('pas1',['type'=>'password','caption'=>'Password','required'=>TRUE]);
+  $this->addField('pas2',['type'=>'password','caption'=>'Password (repeat)','required'=>TRUE]);
+}
+}
+
+$someone = new User($db);
+$form = $app->layout->add('Form');
+$form->setModel(new Reg($db));
+$form->buttonSave->set('Зарегестрироваться');
+$form->onSubmit(function($form) use ($someone) {
+    if (!($form->model['pas1'] == $form->model['pas2'])) {
+        return $form->error('pas1','Пароли не совпадают!');
+    } else {
+        $someone->tryLoadBy('nick_name',$form->model['nick']);
+        if ($someone->loaded()) {
+        //if ($someone['nick_name'] == $form->model['nick']) {
+            return $form->error('nick','Такой ник уже есть.');
+        } else {
+            $someone['nick_name'] = $form->model['nick'];
+            $someone['password'] = $form->model['pas1'];
+            $someone->save();
+            $someone->tryLoadBy('nick_name',$form->model['nick']);
+            $_SESSION['user_id'] = $someone->id;
+            return new \atk4\ui\jsExpression('document.location="main.php"');
+        }
+    }
+});
