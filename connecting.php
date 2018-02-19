@@ -3,7 +3,7 @@
 session_start();
 date_default_timezone_set('UTC');
 
-require '../vendor/autoload.php';
+require 'vendor/autoload.php';
 
 if (isset($_ENV['CLEARDB_DATABASE_URL'])) {
      $db = \atk4\data\Persistence::connect($_ENV['CLEARDB_DATABASE_URL']);
