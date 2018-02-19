@@ -1,8 +1,9 @@
 <?php
 
-require '../vendor/autoload.php';
-
 session_start();
+date_default_timezone_set('UTC');
+
+require '../vendor/autoload.php';
 
 if (isset($_ENV['CLEARDB_DATABASE_URL'])) {
      $db = \atk4\data\Persistence::connect($_ENV['CLEARDB_DATABASE_URL']);
@@ -16,5 +17,24 @@ function init() {
 	parent::init();
 	$this->addField('nick_name',['required'=>TRUE]);
   $this->addField('password',[/*'type'=>'password',*/'required'=>TRUE]);
+}
+}
+
+class Forum extends \atk4\data\Model {
+	public $table = 'forum';
+function init() {
+	parent::init();
+	$this->addField('name',['required'=>TRUE]);
+  $this->hasMany('Chat',new Chat);
+}
+}
+
+class Chat extends \atk4\data\Model {
+	public $table = 'chat';
+function init() {
+	parent::init();
+	$this->addField('text');
+  $this->addField('time');
+  $this->hasOne('forum_id', [new Forum(),'caption'=>'Forum'])->addTitle();
 }
 }
